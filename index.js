@@ -1,73 +1,92 @@
-// Description: CRUD Book No DB
-// npm install express
-// Run this file with node CRUDBookDB.js
-// Test with Postman
-require("dotenv").config();
 const express = require('express');
+const Sequelize = require('sequelize');
 const app = express();
 
-// parse incoming request
 app.use(express.json());
 
-// sample data
-let books = [
-    {
-        id: 1,
-        title: 'Book 1',
-        author: 'Author 1'
+const sequelize =  new Sequelize('database' , 'username' , 'password', {
+    host: 'localhost' ,
+    dialect: 'sqlite' ,
+    storage: '/Database/SQBooks.sqlite'
+});
+
+const Book = sequelize.defire('book', {
+    id: {
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
+        primaryKey: true
     },
-    {
-        id: 2,
-        title: 'Book 2',
-        author: 'Author 2'
+    title: {
+        type: Sequelize.STRING,
+        allowNull:false
     },
-    {
-        id: 3,
-        title: 'Book 3',
-        author: 'Author 3'
-    },
-]
-
-// route to get all books
-app.get('/books', (req, res) => {
-    res.json(books);
+    author: {
+        type: Sequelize.STRING,
+        allowNull:false
+    }
 });
 
-// route to get a book by id
-app.get('/books/:id', (req, res) => {
-    const book = books.find(b => b.id === parseInt(req.params.id));
-    if (!book) res.status(404).send('Book not found');
-    res.json(book);
+sequelize.sync();
+
+app.get('/book',(req,res) => {
+    Book.findAll().then(book => {
+        res.json(books);
+    }).catch(err => {
+        res.status(500).send(err);
+    });
 });
 
-// route to create a new book
-app.post('/books', (req, res) => {
-    const book = {
-        id: books.length + 1,
-        title: req.body.title,
-        author: req.body.author
-    };
-    books.push(book);
-    res.send(book);
+app.get('/books/:id' ,(req,res) => {
+    Book.findByPk(req.params.id).then(book => {
+        if (!book) {
+            res.status(404).send('Book now found');
+        } else {
+            res.json(book);
+        }
+    }).catch(err => {
+        res.status(500).send(err);
+    });
 });
 
-// route to update a book
-app.put('/books/:id', (req, res) => {
-    const book = books.find(b => b.id === parseInt(req.params.id));
-    if (!book) res.status(404).send('Book not found');
-    book.title = req.body.title;
-    book.author = req.body.author;
-    res.send(book);
+app.post('/books',(req, res) => {
+    Book.create(req.body).then(book => {
+        res.send(book);
+    }).catch(err => {
+        res.status(500).send(err);
+    });
 });
 
-// route to delete a book
-app.delete('/books/:id', (req, res) => {
-    const book = books.find(b => b.id === parseInt(req.params.id));
-    if (!book) res.status(404).send('Book not found');
-    const index = books.indexOf(book);
-    books.splice(index, 1);
-    res.send(book);
+app.put('/books/:id', (req,res) => {
+    Book.findByPk(req.params.id).then(book => {
+        if(!book) {
+            res.status(404).send('Book not found');
+        } else {
+            book.update(req.body).then(() => {
+                res.send(book);
+            }).catch(err => {
+                res.status(500).send(err);
+            });
+        }
+    }).catch(err => {
+        res.status(500).send(err);
+    });
 });
+
+app.delete('/books/:id' , (req,res) => {
+    Book.findByPk(req.params.id).then(book => {
+        if(!book) {
+            res.status(404).send("Book mot found");
+        } else {
+            book.destroy().then(() => {
+                res.send({});
+            }).catch(err => {
+                res.status(500).send(err);
+            });
+        }
+    }).catch(err => {
+        res.status(500).send(err);
+    });
+}); 
 
 const port = process.env.PORT || 3000;
-app.listen(port, () => console.log(`Listening on port http://localhost:${port}...`));
+app.listen(port, () => console.log(`Listening on port ${port}...`));
