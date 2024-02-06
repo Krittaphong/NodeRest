@@ -10,7 +10,7 @@ const sequelize =  new Sequelize('database' , 'username' , 'password', {
     storage: '/Database/SQBooks.sqlite'
 });
 
-const Book = sequelize.defire('book', {
+const Book = sequelize.define('book', {
     id: {
         type: Sequelize.INTEGER,
         autoIncrement: true,
