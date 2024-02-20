@@ -3,7 +3,7 @@ const mongoose = require("mongoose")
 const bodyParser = require("body-parser")
 
 mongoose.connect(
-    "mongodb://admin:MNGnco67659@node58312-krittaphong.proen.app.ruk-com.cloud:11783",
+    "mongodb://admin:MNGnco67659@node58312-krittaphong.proen.app.ruk-com.cloud",
     {
         useNewUrlParser: true,
         useUnifiedTopology: true
@@ -21,7 +21,7 @@ const Book = mongoose.model("Book", {
 })
 
 const app = express()
-app,use(bodyParser.json())
+app.use(bodyParser.json())
 
 app.post("/books", async (req,res) => {
     try {
